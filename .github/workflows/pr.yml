@@ -17,6 +17,8 @@ jobs:
     name: Open Release PR
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: check out repository
         uses: actions/checkout@v4
@@ -28,6 +30,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
           git checkout -b ${BRANCH_NAME}
+          echo "${{ toJson(inputs) }}" > build_info.json
+          git add build_info.json
           git commit \
             --allow-empty \
             -m "release ${BUILD_INFO}"
@@ -36,6 +40,6 @@ jobs:
           git push origin --tags
           gh pr create \
             --title "release ${BUILD_INFO}" \
-            --body "do not delete the following lines:\n${{ inputs.skylight_release_timestamp }}\n${{ inputs.skylight_tar_checksum }}" \
-            --head "${BUILD_INFO}" \
+            --body $'${{ toJson(inputs) }}' \
+            --head "${BRANCH_NAME}" \
             --base "main"
