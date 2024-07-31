@@ -17,6 +17,8 @@ jobs:
     name: Open Release PR
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: check out repository
         uses: actions/checkout@v4
@@ -37,5 +39,5 @@ jobs:
           gh pr create \
             --title "release ${BUILD_INFO}" \
             --body "do not delete the following lines:\n${{ inputs.skylight_release_timestamp }}\n${{ inputs.skylight_tar_checksum }}" \
-            --head "${BUILD_INFO}" \
+            --head "${BRANCH_NAME}" \
             --base "main"
