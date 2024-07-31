@@ -1,0 +1,41 @@
+name: Open Release PR
+on:
+  workflow_dispatch:
+    inputs:
+      skylight_build_info:
+        description: "formatted version & commit info (skylight -b)"
+        required: true
+      skylight_release_timestamp:
+        description: "timestamp with which the build is tagged"
+        required: true
+      skylight_tar_checksum:
+        description: "checksum of the skylight standalone tar file"
+        required: true
+
+jobs:
+  open_pr:
+    name: Open Release PR
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repository
+        uses: actions/checkout@v4
+      - name: open PR
+        env:
+          BRANCH_NAME: "release-${{ inputs.skylight_build_info }}"
+          BUILD_INFO: "${{ inputs.skylight_build_info }}"
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git checkout -b ${BRANCH_NAME}
+          git commit \
+            --allow-empty \
+            -m "release ${BUILD_INFO}"
+          git tag ${BUILD_INFO}
+          git push --set-upstream origin ${BRANCH_NAME}
+          git push origin --tags
+          gh pr create \
+            --title "release ${BUILD_INFO}" \
+            --body "do not delete the following lines:\n${{ inputs.skylight_release_timestamp }}\n${{ inputs.skylight_tar_checksum }}" \
+            --head "${BUILD_INFO}" \
+            --base "main"
