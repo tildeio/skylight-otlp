@@ -14,9 +14,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-      - run: |
-          gem install bundler
-          bundle
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
       - name: download artifacts and create release
         id: download_artifacts
         env:
