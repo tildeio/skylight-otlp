@@ -1,16 +1,17 @@
 #!/usr/bin/env ruby
 
 require 'bundler/inline'
-require 'json'
-require 'fileutils'
-require 'uri'
-require 'net/http'
-require 'digest/sha2'
 
 gemfile do
   source 'https://rubygems.org'
   gem 'octokit'
 end
+
+require 'json'
+require 'fileutils'
+require 'uri'
+require 'net/http'
+require 'digest/sha2'
 
 root = File.expand_path('../..', __dir__)
 
