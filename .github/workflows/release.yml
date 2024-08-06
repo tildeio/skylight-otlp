@@ -10,9 +10,6 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: get version
-        run: |
-        echo "::set-output name=version::$(ruby .github/workflows/fetch_release.rb --version)"
       - name: download artifacts and create release
         id: download_artifacts
         env:
