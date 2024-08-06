@@ -9,12 +9,14 @@ jobs:
       contents: write
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: .github/workflows/Gemfile
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-      - run: gem update --system
+      - run: bundle
       - name: download artifacts and create release
         id: download_artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: "ruby .github/workflows/fetch_release.rb"
+        run: "bundle exec ruby .github/workflows/fetch_release.rb"

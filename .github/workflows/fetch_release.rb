@@ -1,11 +1,5 @@
 #!/usr/bin/env ruby
-
-require 'bundler/inline'
-
-gemfile do
-  source 'https://rubygems.org'
-  gem 'octokit'
-end
+# frozen_string_literal: true
 
 require 'json'
 require 'fileutils'
@@ -19,7 +13,7 @@ Dir.chdir(root)
 CONFIG = JSON.parse(File.read('skylight.json'))
 VERSION = CONFIG.fetch('version')
 CHECKSUMS = CONFIG.fetch('otlp_checksums')
-BASE_URL = 'https://s3.amazonaws.com/skylight-agent-packages/skylight-native'.freeze
+BASE_URL = 'https://s3.amazonaws.com/skylight-agent-packages/skylight-native'
 REPO = 'tildeio/skylight-otlp'
 TOKEN = ENV.fetch('GITHUB_TOKEN')
 
