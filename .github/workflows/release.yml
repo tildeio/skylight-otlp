@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+      - run: gem update --system
       - name: download artifacts and create release
         id: download_artifacts
         env:
