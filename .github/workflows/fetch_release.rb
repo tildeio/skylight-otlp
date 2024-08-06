@@ -6,6 +6,7 @@ require 'fileutils'
 require 'uri'
 require 'net/http'
 require 'digest/sha2'
+require 'octokit'
 
 root = File.expand_path('../..', __dir__)
 
