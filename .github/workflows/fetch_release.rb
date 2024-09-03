@@ -44,13 +44,15 @@ def download_artifact(platform:, checksum:, version: VERSION, base_url: BASE_URL
 
   fetched_checksum = digest.hexdigest
 
-  return if checksum == fetched_checksum
+  return { checksum: checksum, path: path, platform: platform } if checksum == fetched_checksum
 
   raise "non-matching checksum (expected = #{checksum}; actual = #{fetched_checksum} for #{platform}"
 end
 
+artifacts = []
+
 CHECKSUMS.each do |platform, checksum|
-  download_artifact(platform: platform, checksum: checksum)
+  artifacts << download_artifact(platform: platform, checksum: checksum)
 end
 
 octokit = Octokit::Client.new(access_token: TOKEN)
@@ -60,8 +62,9 @@ release = octokit.create_release(REPO, VERSION,
 
 puts "Release id #{release.id} tagged #{VERSION} (#{release.url})"
 
-Dir['artifacts/*'].each do |file|
-  puts "uploading #{file}..."
-  asset = octokit.upload_asset(release.url, file, content_type: 'application/gzip')
+artifacts.each do |artifact|
+  puts "uploading #{artifact[:path]}..."
+  asset = octokit.upload_asset(release.url, artifact[:path], content_type: 'application/gzip',
+                                                             query: { label: artifact[:platform] })
   puts asset.url
 end
