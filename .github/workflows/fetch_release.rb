@@ -33,16 +33,16 @@ class Artifact
   def upload_github_asset(octokit, release)
     puts "uploading #{@path}..."
     asset = octokit.upload_asset(
-      release.url, 
-      @path, 
+      release.url,
+      @path,
       content_type: 'application/gzip',
-      query: { label: artifact[:platform] }
+      query: { label: @platform }
     )
     puts asset.url
   end
 
   def upload_lambda_layer(aws)
-    return unless lambda_arch = LAMBDA_PLATFORMS[@platform]
+    return unless (lambda_arch = LAMBDA_PLATFORMS[@platform])
 
     require 'zip'
     require 'rubygems/package'
@@ -58,11 +58,11 @@ class Artifact
     FileUtils.mkdir_p(binary_dir)
 
     # 1 - unarchive
-    Gem::Package::new("").extract_tar_gz(File.open(@path, "rb"), binary_dir)
+    Gem::Package.new('').extract_tar_gz(File.open(@path, 'rb'), binary_dir)
 
-    list = Dir[File.join(binary_dir, "*")]
+    list = Dir[File.join(binary_dir, '*')]
 
-    if list != [File.join(binary_dir, "skylight")]
+    if list != [File.join(binary_dir, 'skylight')]
       raise "expected to find one skylight binary but found #{list.inspect}"
     end
 
@@ -133,7 +133,7 @@ CHECKSUMS.each do |platform, checksum|
   artifacts << download_artifact(platform: platform, checksum: checksum)
 end
 
-LAMBDA_PLATFORMS = { "x86_64-linux" => "x86_64", "aarch64-linux" => "arm64" }.freeze
+LAMBDA_PLATFORMS = { 'x86_64-linux' => 'x86_64', 'aarch64-linux' => 'arm64' }.freeze
 
 aws = Aws::Lambda::Client.new
 # do this first to get the ARNs
@@ -144,11 +144,11 @@ end
 octokit = Octokit::Client.new(access_token: TOKEN)
 puts 'creating release...'
 release = octokit.create_release(
-  REPO, 
+  REPO,
   VERSION,
-  name: "Skylight for OTLP #{VERSION}", 
-  target_commitish: 'main', 
-  draft: true, 
+  name: "Skylight for OTLP #{VERSION}",
+  target_commitish: 'main',
+  draft: true,
   prerelease: true,
   # TODO: better formatting
   body: artifacts.map(&:layer_version_arn).compact.join("\n")
