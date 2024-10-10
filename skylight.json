@@ -1,13 +1,13 @@
 {
-  "version": "6.0.0-alpha-f28dc4e",
+  "version": "6.0.0-alpha-38a1e87",
   "otlp_checksums": {
-    "x86-linux": "937e1e4add33e223f9884f54ab96ad4b4f50edc3f5a84cb9a2d7255f427aad35",
-    "x86_64-linux": "72e00dc8b736672a383cef1d4bc54c72c32e3f5a8492f9fa33c7f1cad2f9e8ef",
-    "x86_64-linux-musl": "d4802be3fd7705531a4a15bdd6f20ea3bbc4a7f3195d15155d2a7eaa4a24f70a",
-    "x86_64-darwin": "7db6764b495e7128cd811570f7ee5c4882c84cd5c8ba2b3615c6dfb90c8d575c",
-    "x86_64-freebsd": "7870c05808606fca5d0157106bc21e1113362ac1c77f1fa9ffaca54cd7b0f9da",
-    "aarch64-linux": "a662523e32a1e5396a6f77f99deab0b46a53f8ed8c926c7e3aadb8fcd2f1865c",
-    "aarch64-linux-musl": "6cc3e9d0cd56e46d693c2d73ca76f29b2d903ee3234eeb0551befe03e97444f6",
-    "aarch64-darwin": "16f6ef5c7d0f0234b9620acbe5d1c21ab20e03426e313a985442c0c0e9f6a436"
+    "x86-linux": "460512e64bae496b248edcdfa3d23b91cffb15392b637eb5039778cea5e0ebd1",
+    "x86_64-linux": "cbd6d6074f432fd9e602872f0cfa2e31d10bba83e6eba7425fb23a32f4c2d4a0",
+    "x86_64-linux-musl": "737e412186fa13a67cd2b9d1108463389adabd997b52768a48f60890b6b32c54",
+    "x86_64-darwin": "e6c6a912965bb111f172ee1a31960b4e7a13a9ac34f7bf6d695b7886b1abce44",
+    "x86_64-freebsd": "9c3577e6775d8821c31fc0a17799b67c30a2605b305214fa50c3a62916df96b4",
+    "aarch64-linux": "2ae991620fffd9c349b6143a407dc5749dae6e5e90406e87baade863eef204fe",
+    "aarch64-linux-musl": "9379ed59bd4a3ecf0855aafc74be41dc6c8f8444f32abf724d6855360652c580",
+    "aarch64-darwin": "8fbe64c34a7781a210813ed087605f2b2c7b0db5fc95b4681594f27b4636a9dc"
   }
 }
