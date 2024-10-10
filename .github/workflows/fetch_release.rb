@@ -21,9 +21,12 @@ TOKEN = ENV.fetch('GITHUB_TOKEN')
 
 ENV['AWS_REGION'] ||= 'us-east-1'
 
-class Artifact
-  attr_reader :layer_version_arn
+REGIONS = %w[
+  us-east-1
+  eu-west-2
+]
 
+class Artifact
   def initialize(checksum:, path:, platform:)
     @checksum = checksum
     @path = path
@@ -41,7 +44,7 @@ class Artifact
     puts asset.url
   end
 
-  def upload_lambda_layer(aws)
+  def upload_lambda_layer(aws_clients)
     return unless (lambda_arch = LAMBDA_PLATFORMS[@platform])
 
     require 'zip'
@@ -71,28 +74,37 @@ class Artifact
       zip.add('extensions/skylight', list[0])
     end
 
-    # 3 - make lambda layer
-    resp = aws.publish_layer_version({
-      compatible_architectures: [lambda_arch],
-      content: {
-        zip_file: File.open(zipfile_path, 'rb')
-      }, 
-      description: "Skylight #{VERSION}", 
-      layer_name: "skylight-#{VERSION}-#{lambda_arch}".tr('.', '_'), 
-      license_info: "MIT"
-    })
+    aws_clients.each do |client|
 
-    @layer_arn = resp.layer_arn
-    @layer_version_arn = resp.layer_version_arn
-    @layer_version = resp.version
+      # 3 - make lambda layer
+      resp = client.publish_layer_version({
+        compatible_architectures: [lambda_arch],
+        content: {
+          zip_file: File.open(zipfile_path, 'rb')
+        }, 
+        description: "Skylight #{VERSION}", 
+        layer_name: "skylight-#{VERSION}-#{lambda_arch}".tr('.', '_'), 
+        license_info: "MIT"
+      })
 
-    permission_resp = aws.add_layer_version_permission({
-      action: "lambda:GetLayerVersion", 
-      layer_name: @layer_arn, 
-      principal: "*", 
-      statement_id: "permission-#{VERSION}".tr('.', '_'), 
-      version_number: @layer_version, 
-    })
+      layer_arn = resp.layer_arn
+      layer_version_arn = resp.layer_version_arn
+      layer_version = resp.version
+
+      permission_resp = client.add_layer_version_permission({
+        action: "lambda:GetLayerVersion", 
+        layer_name: layer_arn, 
+        principal: "*", 
+        statement_id: "permission-#{VERSION}".tr('.', '_'), 
+        version_number: layer_version, 
+      })
+
+      layer_version_arns << layer_version_arn
+    end
+  end
+
+  def layer_version_arns
+    @layer_version_arns ||= []
   end
 end
 
@@ -135,7 +147,9 @@ end
 
 LAMBDA_PLATFORMS = { 'x86_64-linux' => 'x86_64', 'aarch64-linux' => 'arm64' }.freeze
 
-aws = Aws::Lambda::Client.new
+aws = REGIONS.map do |region| 
+  Aws::Lambda::Client.new(region: region)
+end
 # do this first to get the ARNs
 artifacts.each do |artifact|
   artifact.upload_lambda_layer(aws)
@@ -151,7 +165,7 @@ release = octokit.create_release(
   draft: true,
   prerelease: true,
   # TODO: better formatting
-  body: artifacts.map(&:layer_version_arn).compact.join("\n")
+  body: artifacts.map(&:layer_version_arns).flatten.join("\n")
 )
 
 puts "Release id #{release.id} tagged #{VERSION} (#{release.url})"
