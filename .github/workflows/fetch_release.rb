@@ -21,45 +21,6 @@ TOKEN = ENV.fetch('GITHUB_TOKEN')
 
 ENV['AWS_REGION'] ||= 'us-east-1'
 
-def download_artifact(platform:, checksum:, version: VERSION, base_url: BASE_URL)
-  filename = "skylight_otlp_#{platform}.tar.gz"
-  output_filename = filename.sub('skylight_otlp', "skylight_#{version}")
-  path = File.join("artifacts/#{output_filename}")
-  FileUtils.mkdir_p(File.dirname(path))
-
-  uri = URI("#{base_url}/#{version}/#{filename}")
-  digest = Digest::SHA2.new
-  puts "fetching Skylight for OTLP; platform=#{platform}"
-
-  Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-    request = Net::HTTP::Get.new uri
-    http.request request do |response|
-      raise response.code unless response.code == '200'
-
-      File.open(path, 'wb') do |f|
-        response.read_body do |chunk|
-          digest << chunk
-          f.write(chunk)
-        end
-      end
-    end
-  end
-
-  fetched_checksum = digest.hexdigest
-
-  return Artifact.new(checksum: checksum, path: path, platform: platform) if checksum == fetched_checksum
-
-  raise "non-matching checksum (expected = #{checksum}; actual = #{fetched_checksum} for #{platform}"
-end
-
-artifacts = []
-
-CHECKSUMS.each do |platform, checksum|
-  artifacts << download_artifact(platform: platform, checksum: checksum)
-end
-
-LAMBDA_PLATFORMS = { "x86_64-linux" => "x86_64", "aarch64-linux" => "arm64" }.freeze
-
 class Artifact
   attr_reader :layer_version_arn
 
@@ -134,6 +95,45 @@ class Artifact
     })
   end
 end
+
+def download_artifact(platform:, checksum:, version: VERSION, base_url: BASE_URL)
+  filename = "skylight_otlp_#{platform}.tar.gz"
+  output_filename = filename.sub('skylight_otlp', "skylight_#{version}")
+  path = File.join("artifacts/#{output_filename}")
+  FileUtils.mkdir_p(File.dirname(path))
+
+  uri = URI("#{base_url}/#{version}/#{filename}")
+  digest = Digest::SHA2.new
+  puts "fetching Skylight for OTLP; platform=#{platform}"
+
+  Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+    request = Net::HTTP::Get.new uri
+    http.request request do |response|
+      raise response.code unless response.code == '200'
+
+      File.open(path, 'wb') do |f|
+        response.read_body do |chunk|
+          digest << chunk
+          f.write(chunk)
+        end
+      end
+    end
+  end
+
+  fetched_checksum = digest.hexdigest
+
+  return Artifact.new(checksum: checksum, path: path, platform: platform) if checksum == fetched_checksum
+
+  raise "non-matching checksum (expected = #{checksum}; actual = #{fetched_checksum} for #{platform}"
+end
+
+artifacts = []
+
+CHECKSUMS.each do |platform, checksum|
+  artifacts << download_artifact(platform: platform, checksum: checksum)
+end
+
+LAMBDA_PLATFORMS = { "x86_64-linux" => "x86_64", "aarch64-linux" => "arm64" }.freeze
 
 aws = Aws::Lambda::Client.new
 # do this first to get the ARNs
